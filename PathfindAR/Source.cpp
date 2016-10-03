@@ -9,6 +9,12 @@
 //using namespace cv;
 using namespace std;
 
+//class grid {
+//public: 
+//  cv::Point corner[4]; // The 4 corners of the grid, going in a clockwise fashion, starting with the top left
+//
+//};
+
 class gridSquare {
 public:
   cv::Point corner[4];
@@ -38,6 +44,7 @@ cv::Point2f test;
 
 gridSquare** grid;
 arMarker arUco[4];
+bool start;
 
 
 void genMarkers() {
@@ -85,7 +92,13 @@ static bool readDetectorParameters(string filename, cv::Ptr<cv::aruco::DetectorP
   return true;
 }
 
-vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int> ids) {
+float distance(cv::Point p1, cv::Point p2) {
+  return sqrt(pow(abs(p2.x - p1.x), 2.0) + pow(abs(p2.y - p1.y), 2.0));
+}
+
+vector<cv::Point2f> updateCorners(vector<vector<cv::Point2f>> corners, vector<int> ids) {
+
+  vector<cv::Point2f> gridCorners(4);
 
   cv::Point2f midPoint;
   midPoint.x = 0;
@@ -101,12 +114,14 @@ vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int>
   midPoint.x = midPoint.x / (corners.size() * 4);
   midPoint.y = midPoint.y / (corners.size() * 4);
 
-  vector<cv::Point2f> gridCorners(4);
+
 
   for (int i = 0; i < corners.size(); i++) {
+
     float pDist = INFINITY;
+
     for (int j = 0; j < 4; j++) {
-      float dist = sqrt(pow(abs(midPoint.x - corners.at(i).at(j).x), 2.0) + pow(abs(midPoint.y - corners.at(i).at(j).y), 2.0));
+      float dist = distance(corners.at(i).at(j), midPoint);//sqrt(pow(abs(midPoint.x - corners.at(i).at(j).x), 2.0) + pow(abs(midPoint.y - corners.at(i).at(j).y), 2.0));
 
       if (dist < pDist) {
         pDist = dist;
@@ -119,7 +134,7 @@ vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int>
 
         arUco[ids.at(i)].id = ids.at(i);
 
-        cv::Point arUcoCenter = cv::Point(0,0);
+        cv::Point arUcoCenter = cv::Point(0, 0);
         for (int l = 0; l < 4; l++) {
           arUcoCenter.x += arUco[ids.at(i)].corner[l].x;
           arUcoCenter.y += arUco[ids.at(i)].corner[l].y;
@@ -128,14 +143,78 @@ vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int>
         arUcoCenter.x = arUcoCenter.x / 4;
         arUcoCenter.y = arUcoCenter.y / 4;
 
-        arUco[ids.at(i)].center = arUcoCenter;        
-        
+        arUco[ids.at(i)].center = arUcoCenter;
+
       }
 
     }
   }
 
   return gridCorners;
+
+}
+
+vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int> ids) {
+
+  if (corners.size() == 4) {
+
+    return updateCorners(corners, ids);
+ 
+  }  else {
+
+
+    for (int i = 0; i < corners.size(); i++) { // for each detected marker...
+
+      cv::Point center; // Get the center of it
+      center.x = (corners[i][0].x + corners[i][1].x + corners[i][2].x + corners[i][3].x) / 4;
+      center.y = (corners[i][0].y + corners[i][1].y + corners[i][2].y + corners[i][3].y) / 4;
+
+      float dist = 1e9;
+      float ndist;
+      int swap = 0;
+
+      for (int j = 0; j < 4; j++) { // out of the markers 
+
+        ndist = distance(center, arUco[j].center); // find the closest marker to the detected one
+
+        if (ndist < dist)
+        {
+          dist = ndist;
+          swap = j;
+        }
+      }
+
+      arUco[swap].corner[0] = corners[i][0]; // update marker
+      arUco[swap].corner[1] = corners[i][1];
+      arUco[swap].corner[2] = corners[i][2];
+      arUco[swap].corner[3] = corners[i][3];
+
+      arUco[swap].center = center;      
+
+    }
+    
+    vector<vector<cv::Point2f>> cCorners(4, vector<cv::Point2f> (4));
+    vector<int> cIds(4);
+
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        cCorners.at(i).at(j) = arUco[i].corner[j];
+      }
+      cIds.at(i) = arUco[i].id;
+    }
+    
+
+
+    // find corners to update
+
+    // set equal to last known location of corner
+
+    // update grid corners
+      
+    return updateCorners(cCorners, cIds);
+  
+  }
+
 }
 
 cv::Point findIntersection(cv::Point h1, cv::Point h2, cv::Point v1, cv::Point v2) {
@@ -311,10 +390,6 @@ cv::Point getCenter(vector<cv::Point> contour) {
 
 }
 
-float distance(cv::Point p1, cv::Point p2) {
-  return sqrt(pow(abs(p2.x - p1.x), 2.0) + pow(abs(p2.y - p1.y), 2.0));
-}
-
 bool isWithin(cv::Point p1, cv::Point p2, int rad) {
 
   if (distance(p1, p2) <= rad) {
@@ -369,16 +444,16 @@ void findTokens(cv::Mat imageCopy) {
   for (int i = 0; i < cont2.size(); i++)
   {
     cv::Scalar color = cv::Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-    drawContours(drawing, cont2, i, color, 2, 8, hierarchy, 0, cv::Point());
+    drawContours(imageCopy, cont2, i, color, 2, 8, hierarchy, 0, cv::Point());
 
     cv::Point cent = getCenter(cont2.at(i));
 
-    cv::circle(drawing, cent, 5, cv::Scalar(255, 0, 255), -1);
+    cv::circle(imageCopy, cent, 5, cv::Scalar(255, 0, 255), -1);
 
   }
 
 
-  cv::imshow("test2", drawing);
+ // cv::imshow("test2", drawing);
 
 }
 
@@ -452,7 +527,7 @@ int main(int, char** argv)
 
   cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
 
-  bool start = false;
+  start = false;
 
   while (inputVideo.grab()) {
     cv::Mat image, imageCopy; inputVideo.retrieve(image); image.copyTo(imageCopy);
@@ -464,42 +539,52 @@ int main(int, char** argv)
 
     GaussianBlur(image, image, cv::Size(3, 3), 1.5, 1.5);
 
-    //readDetectorParameters("../detector_params.yml", detectorParams);
-   // cv::aruco::detectMarkers(image, dictionary, corners, ids,detectorParams, rejected);
-    cv::aruco::detectMarkers(image, dictionary, corners, ids);
-   
-    //for (std::vector< vector<cv::Point2f> >::iterator it = rejected.begin(); it != rejected.end(); ++it) {
-    //  vector<cv::Point2f> sqPoints = *it;
-    //  //cout << sqPoints.size() << endl;
-    //  //Point pt2(it[1].x, it[1].y);
-    //  cv::line(image, sqPoints[0], sqPoints[1], CV_RGB(255, 0, 0));
-    //  cv::line(image, sqPoints[2], sqPoints[1], CV_RGB(255, 0, 0));
-    //  cv::line(image, sqPoints[2], sqPoints[3], CV_RGB(255, 0, 0));
-    //  cv::line(image, sqPoints[0], sqPoints[3], CV_RGB(255, 0, 0));
-    //}
-    //GaussianBlur(image, image, cv::Size(3, 3), 1.5, 1.5);
-    
+    cv::aruco::detectMarkers(image, dictionary, corners, ids);  
 
-    // if at least one marker detected 
-    if (ids.size() > 0) cv::aruco::drawDetectedMarkers(image, corners, ids);
 
-   
 
-    if (ids.size() == 4) {
-      vector<cv::Point2f> gridCorners = findCorners(corners, ids);
+    vector<cv::Point2f> gridCorners;
 
+    if (ids.size() == 4) {  
       start = true;
-
     }
 
     if (start == true){
+      // if at least one marker detected 
+      if (ids.size() > 0) {
+        //cv::aruco::drawDetectedMarkers(image, corners, ids);
+        gridCorners = findCorners(corners, ids);
+
+        cv::circle(image, gridCorners.at(0), 5, cv::Scalar(255, 0, 0), -1);
+        cv::circle(image, gridCorners.at(1), 5, cv::Scalar(255, 0, 0), -1);
+        cv::circle(image, gridCorners.at(2), 5, cv::Scalar(255, 0, 0), -1);
+        cv::circle(image, gridCorners.at(3), 5, cv::Scalar(255, 0, 0), -1);
+      }
+
+      cv::circle(image, arUco[0].center, 5, cv::Scalar(255, 0, 255), -1);
+      cv::circle(image, arUco[1].center, 5, cv::Scalar(255, 0, 255), -1);
+      cv::circle(image, arUco[2].center, 5, cv::Scalar(255, 0, 255), -1);
+      cv::circle(image, arUco[3].center, 5, cv::Scalar(255, 0, 255), -1);
+
+      drawGrid(image, gridCorners, 11, 10);
+
+      // refine findTokens
+      findTokens(image);
+
 
     }
+
+
+
 
     cv::imshow("out", image); 
     char key = (char)cv::waitKey(30); 
     if (key == 27) break;
   }
+
+
+
+
 
   //cv::VideoCapture cap("../Videos/GridClose.mp4"); // open the default camera
   //if (!cap.isOpened())  // check if we succeeded
@@ -550,7 +635,6 @@ int main(int, char** argv)
   //  cv::imshow("edges", image);
   //  if (cv::waitKey(30) >= 0) break;
   //}
-
 
   return 0;
 }
