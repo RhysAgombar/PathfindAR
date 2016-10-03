@@ -1,4 +1,4 @@
-#include <opencv2/aruco.hpp>
+﻿#include <opencv2/aruco.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <math.h>
@@ -16,6 +16,13 @@ public:
   // add  shading functions
 };
 
+class arMarker {
+public:
+  cv::Point corner[4];
+  cv::Point center;
+  int id;
+};
+
 /// Global variables
 cv::Mat src, erosion_dst, dilation_dst;
 
@@ -25,10 +32,12 @@ int dilation_elem = 0;
 int dilation_size = 0;
 int const max_elem = 2;
 int const max_kernel_size = 21;
+cv::RNG rng(12345);
 
 cv::Point2f test;
 
 gridSquare** grid;
+arMarker arUco[4];
 
 
 void genMarkers() {
@@ -102,6 +111,25 @@ vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int>
       if (dist < pDist) {
         pDist = dist;
         gridCorners.at(ids.at(i)) = corners.at(i).at(j);
+
+        // updates arUco markers
+        for (int k = 0; k < 4; k++) {
+          arUco[ids.at(i)].corner[k] = corners.at(i).at(k);
+        }
+
+        arUco[ids.at(i)].id = ids.at(i);
+
+        cv::Point arUcoCenter = cv::Point(0,0);
+        for (int l = 0; l < 4; l++) {
+          arUcoCenter.x += arUco[ids.at(i)].corner[l].x;
+          arUcoCenter.y += arUco[ids.at(i)].corner[l].y;
+        }
+
+        arUcoCenter.x = arUcoCenter.x / 4;
+        arUcoCenter.y = arUcoCenter.y / 4;
+
+        arUco[ids.at(i)].center = arUcoCenter;        
+        
       }
 
     }
@@ -253,14 +281,169 @@ void drawGrid(cv::Mat imageCopy, vector<cv::Point2f> gridCorners, int horiz, int
 
 }
 
+cv::Point getCenter(vector<cv::Point> contour) {
+  // We assume all contours are somewhat balanced, therefore the center is determined using a bounding box.
+
+  int minX = 1e9;
+  int maxX = -1;
+  int minY = 1e9;
+  int maxY = -1;
+
+  for (int i = 0; i < contour.size() - 1; i++) {
+
+    if (contour.at(i).x < minX) {
+      minX = contour.at(i).x;
+    }
+    if (contour.at(i).x > maxX) {
+      maxX = contour.at(i).x;
+    }
+
+    if (contour.at(i).y < minY) {
+      minY = contour.at(i).y;
+    }
+    if (contour.at(i).y > maxY) {
+      maxY = contour.at(i).y;
+    }
+
+  }
+
+  return cv::Point((minX + maxX) / 2, (minY + maxY) / 2);
+
+}
+
+float distance(cv::Point p1, cv::Point p2) {
+  return sqrt(pow(abs(p2.x - p1.x), 2.0) + pow(abs(p2.y - p1.y), 2.0));
+}
+
+bool isWithin(cv::Point p1, cv::Point p2, int rad) {
+
+  if (distance(p1, p2) <= rad) {
+    return true;
+  }
+  else {
+    return false;
+  }
+
+}
+
+void findTokens(cv::Mat imageCopy) {
+  cv::Mat imageGray, image2;
+  vector<vector<cv::Point> > contours, cont2;
+  vector<cv::Vec4i> hierarchy;
+
+
+  cv::cvtColor(imageCopy,imageGray,CV_RGB2GRAY);
+
+  cv::GaussianBlur(imageGray, imageGray, cv::Size(5, 5), 1.5, 1.5);
+
+  cv::Canny(imageGray, imageGray, 100, 200, 3);
+
+  cv::findContours(imageGray, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE,cv::Point(0, 0));
+  
+  cv::Mat drawing = cv::Mat::zeros(imageGray.size(), CV_8UC3);
+
+  for (int i = 0; i < contours.size(); i++) {
+   // if (hierarchy[i][3] == -1) {
+      if (contours.at(i).capacity() > 3) {
+        cv::Point cent = getCenter(contours.at(i));
+
+        bool flag = true;
+
+        // eliminate aruco markers
+        for (int j = 0; j < 4; j++) {
+          if (isWithin(cent, arUco[j].center, 10)) {
+            flag = false;
+          }
+        }
+
+        if (flag == true) {
+          cont2.push_back(contours.at(i));
+        }
+        
+        
+      }      
+   // }
+  }
+
+
+  for (int i = 0; i < cont2.size(); i++)
+  {
+    cv::Scalar color = cv::Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+    drawContours(drawing, cont2, i, color, 2, 8, hierarchy, 0, cv::Point());
+
+    cv::Point cent = getCenter(cont2.at(i));
+
+    cv::circle(drawing, cent, 5, cv::Scalar(255, 0, 255), -1);
+
+  }
+
+
+  cv::imshow("test2", drawing);
+
+}
+
+//int main(int, char** argv)
+//{
+//
+//  cv::Mat inputImage;
+//
+//  cv::Mat image, imageCopy;
+//
+//  string imageName("../Images/Capture2.PNG"); // by default
+//  image = cv::imread(imageName.c_str(), cv::IMREAD_COLOR); // Read the file
+//
+//  cv::GaussianBlur(image, image, cv::Size(3, 3), 1.5, 1.5);
+//
+//  cv::imshow("Original", image);
+//
+//  int dictionaryId = 10; // alias for the DICT_6X6_250 dictionary
+//
+//  cv::Ptr<cv::aruco::Dictionary> dictionary =
+//    cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
+//
+//  cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
+//
+//  vector< int > ids;
+//  vector< vector< cv::Point2f > > corners, rejected;
+//
+//  cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
+//  readDetectorParameters("../detector_params.yml", detectorParams);
+//
+//  image.copyTo(imageCopy);
+//  if (ids.size() > 0) {
+//    cv::aruco::drawDetectedMarkers(imageCopy, corners, ids);
+//  }
+//
+//  vector<cv::Point2f> gridCorners = findCorners(corners, ids);
+//  // All rectangular object corners are organized in arrays, with the numbers going clockwise. eg: at(0) is the top left corner, at(1) is the top right, at(2) is the bottom right, at(3) is bottom left
+//  // This follows the convention that ArUco uses.
+//
+//
+//  int horiz = 11;//21;
+//  int vert = 10;//30;
+//
+//  drawGrid(imageCopy, gridCorners, horiz, vert);
+//
+//  cv::circle(imageCopy, arUco[0].center, 5, cv::Scalar(255, 0, 255), -1);
+//  cv::circle(imageCopy, arUco[1].center, 5, cv::Scalar(255, 0, 255), -1);
+//  cv::circle(imageCopy, arUco[2].center, 5, cv::Scalar(255, 0, 255), -1);
+//  cv::circle(imageCopy, arUco[3].center, 5, cv::Scalar(255, 0, 255), -1);
+//
+//  findTokens(image);
+//
+//  cv::imshow("test", imageCopy);
+//
+//  cv::waitKey(0);
+//
+//  return 0;
+//}
+
+
 int main(int, char** argv)
 {
-  cv::Mat inputImage;
 
-  cv::Mat image, imageCopy;
-
-  string imageName("../Images/ArUcoGridLarge3x3.png"); // by default
-  image = cv::imread(imageName.c_str(), cv::IMREAD_COLOR); // Read the file
+  cv::VideoCapture inputVideo; 
+  inputVideo.open("../Videos/GridClose.mp4");
 
   int dictionaryId = 10; // alias for the DICT_6X6_250 dictionary
 
@@ -269,37 +452,105 @@ int main(int, char** argv)
 
   cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
 
-  vector< int > ids;
-  vector< vector< cv::Point2f > > corners, rejected;
+  bool start = false;
 
-  cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
-  readDetectorParameters("../detector_params.yml", detectorParams);
+  while (inputVideo.grab()) {
+    cv::Mat image, imageCopy; inputVideo.retrieve(image); image.copyTo(imageCopy);
 
-  image.copyTo(imageCopy);
-  if (ids.size() > 0) {
-    cv::aruco::drawDetectedMarkers(imageCopy, corners, ids);
+    std::vector<int> ids; 
+    std::vector<std::vector<cv::Point2f> > corners, rejected; 
+    
+    cv::resize(image, image, cv::Size(640, 480), 0, 0, cv::INTER_CUBIC);
+
+    GaussianBlur(image, image, cv::Size(3, 3), 1.5, 1.5);
+
+    //readDetectorParameters("../detector_params.yml", detectorParams);
+   // cv::aruco::detectMarkers(image, dictionary, corners, ids,detectorParams, rejected);
+    cv::aruco::detectMarkers(image, dictionary, corners, ids);
+   
+    //for (std::vector< vector<cv::Point2f> >::iterator it = rejected.begin(); it != rejected.end(); ++it) {
+    //  vector<cv::Point2f> sqPoints = *it;
+    //  //cout << sqPoints.size() << endl;
+    //  //Point pt2(it[1].x, it[1].y);
+    //  cv::line(image, sqPoints[0], sqPoints[1], CV_RGB(255, 0, 0));
+    //  cv::line(image, sqPoints[2], sqPoints[1], CV_RGB(255, 0, 0));
+    //  cv::line(image, sqPoints[2], sqPoints[3], CV_RGB(255, 0, 0));
+    //  cv::line(image, sqPoints[0], sqPoints[3], CV_RGB(255, 0, 0));
+    //}
+    //GaussianBlur(image, image, cv::Size(3, 3), 1.5, 1.5);
+    
+
+    // if at least one marker detected 
+    if (ids.size() > 0) cv::aruco::drawDetectedMarkers(image, corners, ids);
+
+   
+
+    if (ids.size() == 4) {
+      vector<cv::Point2f> gridCorners = findCorners(corners, ids);
+
+      start = true;
+
+    }
+
+    if (start == true){
+
+    }
+
+    cv::imshow("out", image); 
+    char key = (char)cv::waitKey(30); 
+    if (key == 27) break;
   }
 
-  vector<cv::Point2f> gridCorners = findCorners(corners, ids);
+  //cv::VideoCapture cap("../Videos/GridClose.mp4"); // open the default camera
+  //if (!cap.isOpened())  // check if we succeeded
+  //  return -1;
 
-  // All rectangular object corners are organized in arrays, with the numbers going clockwise. eg: at(0) is the top left corner, at(1) is the top right, at(2) is the bottom right, at(3) is bottom left
-  // This follows the convention that ArUco uses.
-  cv::circle(imageCopy, gridCorners.at(0), 10, cv::Scalar(255, 255, 255), CV_FILLED, 8, 0);
-  cv::circle(imageCopy, gridCorners.at(1), 10, cv::Scalar(255, 255, 255), CV_FILLED, 8, 0);
-  cv::circle(imageCopy, gridCorners.at(2), 10, cv::Scalar(255, 255, 255), CV_FILLED, 8, 0);
-  cv::circle(imageCopy, gridCorners.at(3), 10, cv::Scalar(255, 255, 255), CV_FILLED, 8, 0);
+  //cv::Mat edges;
+  //cv::namedWindow("edges", 1);
 
-  int horiz = 3;//21;
-  int vert = 3;//30;
+  //
+  //int dictionaryId = 10; // alias for the DICT_6X6_250 dictionary
 
-  drawGrid(imageCopy, gridCorners, horiz, vert);
+  //cv::Ptr<cv::aruco::Dictionary> dictionary =
+  //  cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
+
+  //cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
+
+  //vector< int > ids;
+  //vector< vector< cv::Point2f > > corners, rejected;
+
+  ////cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
+  //readDetectorParameters("../detector_params.yml", detectorParams);
 
 
-  cv::imshow("test", imageCopy);
+  //for (;;)
+  //{
+  //  cv::Mat image;
+  //  cap >> image; // get a new frame from camera
+  //  //cvtColor(image, image, cv::COLOR_BGR2GRAY);
+
+  //  //cv::resize(image, image, cv::Size(640, 480), 0, 0, cv::INTER_CUBIC);
+
+  //  //GaussianBlur(image, image, cv::Size(3, 3), 1.5, 1.5);
+
+  //  //findTokens(image);
+  //  cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
+
+  //    if (ids.size() > 0) {
+  //      cv::aruco::drawDetectedMarkers(image, corners, ids);
+  //    }
+
+  //      //int horiz = 11;//21;
+  //      //int vert = 10;//30;
+  //    
+  //      //vector<cv::Point2f> gridCorners = findCorners(corners, ids);
+  //      //drawGrid(image, gridCorners, horiz, vert);
 
 
+  //  cv::imshow("edges", image);
+  //  if (cv::waitKey(30) >= 0) break;
+  //}
 
-  cv::waitKey(0);
 
   return 0;
 }

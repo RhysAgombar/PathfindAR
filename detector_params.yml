@@ -1,13 +1,13 @@
 %YAML:1.0
 nmarkers: 1024
-adaptiveThreshWinSizeMin: 3
+adaptiveThreshWinSizeMin: 5
 adaptiveThreshWinSizeMax: 23
 adaptiveThreshWinSizeStep: 10
 adaptiveThreshWinSize: 21
 adaptiveThreshConstant: 7
 minMarkerPerimeterRate: 0.03
 maxMarkerPerimeterRate: 4.0
-polygonalApproxAccuracyRate: 0.05
+polygonalApproxAccuracyRate: 0.07
 minCornerDistance: 10.0
 minDistanceToBorder: 3
 minMarkerDistance: 10.0
