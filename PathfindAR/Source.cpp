@@ -1,6 +1,8 @@
 ﻿#include <opencv2/aruco.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/imgcodecs.hpp>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,7 +20,32 @@ using namespace std;
 class gridSquare {
 public:
   cv::Point corner[4];
-  // add 'contains' method for finding location
+
+  vector<cv::Point> getPointsArray() {
+    vector<cv::Point> cornerVec(4);
+
+    for (int i = 0; i < 4; i++) {
+      cornerVec.at(i) = corner[i];
+    }
+
+    return cornerVec;
+  }
+
+  bool contains(cv::Point center) {
+
+    vector<cv::Point> cVec = getPointsArray();
+    
+    int result = cv::pointPolygonTest(cVec, center, false); // doesn't work
+
+    if (result == 1) {
+      return true;
+    } else {
+      return false;
+    }
+
+
+  }
+
   // add  shading functions
 };
 
@@ -45,6 +72,11 @@ cv::Point2f test;
 gridSquare** grid;
 arMarker arUco[4];
 bool start;
+
+int gridCount[10][19];
+
+int hSize = 11;
+int vSize = 10;
 
 
 void genMarkers() {
@@ -121,7 +153,7 @@ vector<cv::Point2f> updateCorners(vector<vector<cv::Point2f>> corners, vector<in
     float pDist = INFINITY;
 
     for (int j = 0; j < 4; j++) {
-      float dist = distance(corners.at(i).at(j), midPoint);//sqrt(pow(abs(midPoint.x - corners.at(i).at(j).x), 2.0) + pow(abs(midPoint.y - corners.at(i).at(j).y), 2.0));
+      float dist = distance(corners.at(i).at(j), midPoint);
 
       if (dist < pDist) {
         pDist = dist;
@@ -158,11 +190,12 @@ vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int>
 
   if (corners.size() == 4) {
 
+    // if all markers are found, we're good to go. Update the markers.
     return updateCorners(corners, ids);
  
   }  else {
-
-
+    
+    // If only some of the markers are found, we need to compensate.
     for (int i = 0; i < corners.size(); i++) { // for each detected marker...
 
       cv::Point center; // Get the center of it
@@ -173,14 +206,14 @@ vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int>
       float ndist;
       int swap = 0;
 
-      for (int j = 0; j < 4; j++) { // out of the markers 
+      for (int j = 0; j < 4; j++) { // out of all the previously detected markers 
 
         ndist = distance(center, arUco[j].center); // find the closest marker to the detected one
 
         if (ndist < dist)
         {
           dist = ndist;
-          swap = j;
+          swap = j; // Save the location of the marker to update
         }
       }
 
@@ -190,9 +223,10 @@ vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int>
       arUco[swap].corner[3] = corners[i][3];
 
       arUco[swap].center = center;      
-
+      // In this way, we only update the markers we have info for. The missing markers retain their last known value.
     }
     
+    // Format the data in such a way that the Update function can read it.
     vector<vector<cv::Point2f>> cCorners(4, vector<cv::Point2f> (4));
     vector<int> cIds(4);
 
@@ -203,14 +237,6 @@ vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int>
       cIds.at(i) = arUco[i].id;
     }
     
-
-
-    // find corners to update
-
-    // set equal to last known location of corner
-
-    // update grid corners
-      
     return updateCorners(cCorners, cIds);
   
   }
@@ -219,39 +245,15 @@ vector<cv::Point2f> findCorners(vector<vector<cv::Point2f>> corners, vector<int>
 
 cv::Point findIntersection(cv::Point h1, cv::Point h2, cv::Point v1, cv::Point v2) {
 
-  float hSlope, vSlope, hInt, vInt;
-  float eps = 1e-6;
+  cv::Point x = v1 - h1;
+  cv::Point hDist = h2 - h1;
+  cv::Point vDist = v2 - v1;
 
-  cv::Point intersection;
+  float cross = hDist.x*vDist.y - hDist.y*vDist.x;
 
-  hSlope = (h2.y - h1.y) / (float)(h2.x - h1.x);
-  hInt = h1.y - hSlope * h1.x;
-
-  vSlope = (v2.y - v1.y) / (float)(v2.x - v1.x);
-  vInt = v1.y - vSlope * v1.x;
-
-
-  if (hSlope < eps) {
-    intersection.y = h1.y;
-  }
-  else if (isinf(hSlope)) {
-    intersection.x = h1.x;
-  }
-  else {
-    intersection.y = hSlope * intersection.x + hInt;
-  }
-
-
-  if (vSlope < eps) {
-    intersection.y = v1.y;
-  }
-  else if (isinf(vSlope)) {
-    intersection.x = v1.x;
-  }
-  else {
-    intersection.x = (vInt - hInt) / (float)(hSlope - vSlope);
-  }
-
+  // I'm not sure how this part works, but it does.
+  double t = (x.x * vDist.y - x.y * vDist.x) / cross;
+  cv::Point intersection = h1 + hDist * t;
 
   return intersection;
 
@@ -267,21 +269,21 @@ void drawGrid(cv::Mat imageCopy, vector<cv::Point2f> gridCorners, int horiz, int
   grid = new gridSquare*[vert];
   for (int i = 0; i < vert; i++) {
     grid[i] = new gridSquare[horiz];
-  }
+  }    
 
   cv::Point **hLines;
   hLines = new cv::Point*[vert];
   for (int i = 0; i < vert; i++) {
     hLines[i] = new cv::Point[2];
-  }
+  }    
 
   cv::Point **vLines;
   vLines = new cv::Point*[horiz];
   for (int i = 0; i < horiz; i++) {
     vLines[i] = new cv::Point[2];
-  }
+  }    
 
-  horiz = horiz - 1;
+  horiz = horiz - 1; 
   vert = vert - 1;
 
   for (int i = 0; i <= vert; i++) {
@@ -298,7 +300,7 @@ void drawGrid(cv::Mat imageCopy, vector<cv::Point2f> gridCorners, int horiz, int
 
     hLines[i][0] = cv::Point(gridCorners.at(0).x + (distx * (i / (float)vert)), gridCorners.at(0).y + (disty) * (float)(i / (float)vert));
 
-    //cv::circle(imageCopy, cv::Point(gridCorners.at(0).x + (distx * (i/(float) vert)), gridCorners.at(0).y + (disty) * (float)(i/(float) vert)), 2, cv::Scalar(0, 0, 255));
+   //cv::circle(imageCopy, cv::Point(gridCorners.at(0).x + (distx * (i/(float) vert)), gridCorners.at(0).y + (disty) * (float)(i/(float) vert)), 2, cv::Scalar(0, 0, 255));
 
     distx = gridCorners.at(2).x - gridCorners.at(1).x;
     disty = gridCorners.at(2).y - gridCorners.at(1).y;
@@ -337,26 +339,19 @@ void drawGrid(cv::Mat imageCopy, vector<cv::Point2f> gridCorners, int horiz, int
 
   for (int i = 0; i < vert; i++) {
     for (int j = 0; j < horiz; j++) {
+
       grid[j][i].corner[0] = findIntersection(hLines[i][0], hLines[i][1], vLines[j][0], vLines[j][1]);
-      grid[j][i].corner[1] = findIntersection(hLines[i][0], hLines[i][1], vLines[j + 1][0], vLines[j + 1][1]);
-      grid[j][i].corner[2] = findIntersection(hLines[i + 1][0], hLines[i + 1][1], vLines[j + 1][0], vLines[j + 1][1]);
-      grid[j][i].corner[3] = findIntersection(hLines[i + 1][0], hLines[i + 1][1], vLines[j][0], vLines[j][1]);
+      grid[j][i].corner[1] = findIntersection(hLines[i][0], hLines[i][1], vLines[j+1][0], vLines[j+1][1]);
+      grid[j][i].corner[2] = findIntersection(hLines[i+1][0], hLines[i+1][1], vLines[j+1][0], vLines[j+1][1]);
+      grid[j][i].corner[3] = findIntersection(hLines[i+1][0], hLines[i+1][1], vLines[j][0], vLines[j][1]);      
+
+      //cv::circle(imageCopy, grid[j][i].corner[0], 2, cv::Scalar(0, 0, 255));
+      //cv::circle(imageCopy, grid[j][i].corner[1], 2, cv::Scalar(0, 0, 255));
+      //cv::circle(imageCopy, grid[j][i].corner[2], 2, cv::Scalar(0, 0, 255));
+      //cv::circle(imageCopy, grid[j][i].corner[3], 2, cv::Scalar(0, 0, 255));
+
     }
   }
-
-
-  //cv::circle(imageCopy, grid[2][2].corner[0], 2, cv::Scalar(0, 0, 255));
-  //cv::circle(imageCopy, grid[2][2].corner[1], 2, cv::Scalar(0, 0, 255));
-  //cv::circle(imageCopy, grid[2][2].corner[2], 2, cv::Scalar(0, 0, 255));
-  //cv::circle(imageCopy, grid[2][2].corner[3], 2, cv::Scalar(0, 0, 255));
-
-
-  //for (int i = 0; i <= horiz; i++) {
-  //  for (int j = 0; j <= vert; j++) {
-
-  //    cv::circle(imageCopy, findIntersection(hLines[i][0], hLines[i][1], vLines[j][0], vLines[j][1]), 2, cv::Scalar(0, 0, 255));
-  //  }
-  //}
 
 }
 
@@ -401,7 +396,13 @@ bool isWithin(cv::Point p1, cv::Point p2, int rad) {
 
 }
 
-void findTokens(cv::Mat imageCopy) {
+void idTokens(cv::Mat imageCopy) {
+
+  
+
+}
+
+void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
   cv::Mat imageGray, image2;
   vector<vector<cv::Point> > contours, cont2;
   vector<cv::Vec4i> hierarchy;
@@ -409,51 +410,106 @@ void findTokens(cv::Mat imageCopy) {
 
   cv::cvtColor(imageCopy,imageGray,CV_RGB2GRAY);
 
-  cv::GaussianBlur(imageGray, imageGray, cv::Size(5, 5), 1.5, 1.5);
+  cv::GaussianBlur(imageGray, imageGray, cv::Size(3, 3), 1.5, 1.5);
 
   cv::Canny(imageGray, imageGray, 100, 200, 3);
+
+  cv::imshow("test2", imageGray);
 
   cv::findContours(imageGray, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE,cv::Point(0, 0));
   
   cv::Mat drawing = cv::Mat::zeros(imageGray.size(), CV_8UC3);
 
   for (int i = 0; i < contours.size(); i++) {
-   // if (hierarchy[i][3] == -1) {
-      if (contours.at(i).capacity() > 3) {
+
+    if (contours.at(i).capacity() > 3) { // Eliminates the remaining noise
         cv::Point cent = getCenter(contours.at(i));
 
         bool flag = true;
 
         // eliminate aruco markers
         for (int j = 0; j < 4; j++) {
-          if (isWithin(cent, arUco[j].center, 10)) {
+          if (isWithin(cent, arUco[j].center, (0.75 * distance(arUco[j].corner[0], arUco[j].corner[2])))) {
             flag = false;
           }
         }
 
         if (flag == true) {
-          cont2.push_back(contours.at(i));
+          //if (hierarchy[i][3] < 0) {
+            cont2.push_back(contours.at(i));
+          //}                
         }
         
         
       }      
-   // }
-  }
 
+  }
 
   for (int i = 0; i < cont2.size(); i++)
   {
     cv::Scalar color = cv::Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-    drawContours(imageCopy, cont2, i, color, 2, 8, hierarchy, 0, cv::Point());
+    
+    //drawContours(drawing, cont2, i, color, 2, 8, hierarchy, 0, cv::Point());
 
+
+    // IDEA! Let's take advantage of the fact that all the contours for each token will be situated around a central point.
+    // Let's find the squares where more than 1 or 2 countour centers are found (to eliminate noise/displacement)
     cv::Point cent = getCenter(cont2.at(i));
+        
+    for (int j = 0; j < vSize - 1; j++) {
+      for (int k = 0; k < hSize - 1; k++) {
+        bool test = grid[j][k].contains(cent);
 
-    cv::circle(imageCopy, cent, 5, cv::Scalar(255, 0, 255), -1);
+        if (test == true) {
+          gridCount[j][k]++;
+        }
+
+        // something is wrong with my grid assignment
+/*
+        cv::circle(drawing, grid[j][k].corner[0], 5, cv::Scalar(255, 0, 0), -1);
+        cv::circle(drawing, grid[j][k].corner[1], 5, cv::Scalar(255, 0, 0), -1);
+        cv::circle(drawing, grid[j][k].corner[2], 5, cv::Scalar(255, 0, 0), -1);
+        cv::circle(drawing, grid[j][k].corner[3], 5, cv::Scalar(255, 0, 0), -1);*/
+
+        //cv::imshow("test3", drawing);
+
+        //cv::waitKey(0);
+
+      }
+    }
+
+    for (int j = 0; j < vSize - 1; j++) {
+      for (int k = 0; k < hSize - 1; k++) {
+
+        if (gridCount[j][k] > 1) { // Requiring more than one countour in a square cuts down on noise/drift a bit
+
+          //vector<cv::Point> testVec = grid[j][k].getPointsArray();
+
+          cv::Point polyPoints[1][4];
+          polyPoints[0][0] = grid[j][k].corner[0];
+          polyPoints[0][1] = grid[j][k].corner[1];
+          polyPoints[0][2] = grid[j][k].corner[2];
+          polyPoints[0][3] = grid[j][k].corner[3];
+
+          const cv::Point* ppt[1] = { polyPoints[0] };
+          int npt[] = { 4 };
+
+          cv::fillPoly(imageOut, ppt, npt, 1, cv::Scalar(255, 255, 255));
+
+          gridCount[j][k] = 0;
+
+        }
+
+      }
+    }
+
+
+    cv::circle(drawing, cent, 5, cv::Scalar(255, 0, 255), -1);
 
   }
 
+  cv::imshow("test3", drawing);
 
- // cv::imshow("test2", drawing);
 
 }
 
@@ -514,6 +570,8 @@ void findTokens(cv::Mat imageCopy) {
 //}
 
 
+// intersection is wrong
+
 int main(int, char** argv)
 {
 
@@ -524,24 +582,21 @@ int main(int, char** argv)
 
   cv::Ptr<cv::aruco::Dictionary> dictionary =
     cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
-
-  cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
-
+  
   start = false;
 
   while (inputVideo.grab()) {
-    cv::Mat image, imageCopy; inputVideo.retrieve(image); image.copyTo(imageCopy);
+    cv::Mat image, imageCopy; 
+    inputVideo.retrieve(image);  
 
     std::vector<int> ids; 
     std::vector<std::vector<cv::Point2f> > corners, rejected; 
     
     cv::resize(image, image, cv::Size(640, 480), 0, 0, cv::INTER_CUBIC);
+    image.copyTo(imageCopy);
 
     GaussianBlur(image, image, cv::Size(3, 3), 1.5, 1.5);
-
     cv::aruco::detectMarkers(image, dictionary, corners, ids);  
-
-
 
     vector<cv::Point2f> gridCorners;
 
@@ -566,13 +621,36 @@ int main(int, char** argv)
       cv::circle(image, arUco[2].center, 5, cv::Scalar(255, 0, 255), -1);
       cv::circle(image, arUco[3].center, 5, cv::Scalar(255, 0, 255), -1);
 
-      drawGrid(image, gridCorners, 11, 10);
+      drawGrid(image, gridCorners, hSize, vSize);
 
       // refine findTokens
-      findTokens(image);
-
-
+      findTokens(imageCopy, image);
+      
     }
+
+
+
+
+    /** Create some points */
+    /*cv::Point rook_points[1][20];
+    rook_points[0][0] = cv::Point(10,10);
+    rook_points[0][1] = cv::Point(0,20);
+    rook_points[0][2] = cv::Point(20,20);
+
+    const cv::Point* ppt[1] = { rook_points[0] };
+    int npt[] = { 3 };
+
+    cv::fillPoly(image, ppt, npt, 1, cv::Scalar(255, 255, 255));*/
+
+
+/*
+    cvFillPoly(image, &pts, &npts, true, cv::Scalar(0, 255, 0));
+*/
+    //polylines(image, &pts, &npts, 1,
+    //  true, 			// draw closed contour (i.e. joint end to start) 
+    //  cv::Scalar(0, 255, 0),// colour RGB ordering (here = green) 
+    //  3, 		        // line thickness
+    //  CV_AA, 0);
 
 
 
@@ -582,10 +660,7 @@ int main(int, char** argv)
     if (key == 27) break;
   }
 
-
-
-
-
+  
   //cv::VideoCapture cap("../Videos/GridClose.mp4"); // open the default camera
   //if (!cap.isOpened())  // check if we succeeded
   //  return -1;
