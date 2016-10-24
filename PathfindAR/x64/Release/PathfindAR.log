@@ -1,0 +1,30 @@
+﻿  Source.cpp
+D:\Programming\opencv-3.0\build\install\include\opencv2/core/mat.hpp(1959): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+D:\Programming\opencv-3.0\build\install\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+D:\Programming\opencv-3.0\build\install\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+D:\Programming\opencv-3.0\build\install\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+D:\Programming\opencv-3.0\build\install\include\opencv2/imgproc.hpp(618): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+Source.cpp(50): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+Source.cpp(156): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+Source.cpp(230): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+Source.cpp(231): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+Source.cpp(280): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+Source.cpp(331): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+Source.cpp(339): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+Source.cpp(353): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+Source.cpp(358): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+Source.cpp(292): warning C4101: 'vDist': unreferenced local variable
+Source.cpp(292): warning C4101: 'hDist': unreferenced local variable
+Source.cpp(292): warning C4101: 'dist': unreferenced local variable
+Source.cpp(391): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+Source.cpp(393): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+Source.cpp(431): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+Source.cpp(471): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+Source.cpp(616): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  Generating code
+  88 of 856 functions (10.3%) were compiled, the rest were copied from previous compilation.
+    8 functions were new in current compilation
+    43 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  PathfindAR.vcxproj -> D:\Programming Projects\C++\PathfindAR\x64\Release\PathfindAR.exe
+  PathfindAR.vcxproj -> D:\Programming Projects\C++\PathfindAR\x64\Release\PathfindAR.pdb (Full PDB)

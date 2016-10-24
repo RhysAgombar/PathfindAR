@@ -1,12 +1,23 @@
-﻿#include <opencv2/aruco.hpp>
+﻿// REFACTOR THE HELL OUT OF THIS.
+// REFACTOR THE HELL OUT OF THIS.
+// REFACTOR THE HELL OUT OF THIS.
+// REFACTOR THE HELL OUT OF THIS.
+// REFACTOR THE HELL OUT OF THIS.
+
+
+#include <opencv2/aruco.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d.hpp>
-#include <opencv2/imgcodecs.hpp>
+#include <opencv2/videoio.hpp>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <string.h>
+
+
+#include <time.h>
 
 //using namespace cv;
 using namespace std;
@@ -16,6 +27,7 @@ using namespace std;
 //  cv::Point corner[4]; // The 4 corners of the grid, going in a clockwise fashion, starting with the top left
 //
 //};
+
 
 class gridSquare {
 public:
@@ -56,6 +68,19 @@ public:
   int id;
 };
 
+class Token {
+public:
+  int id;
+  string name;
+  cv::Point location;
+  int mRange;
+  int mRemain;
+  int aRange;
+  int lifespan;
+  bool found = false;
+  cv::Scalar colour;
+};
+
 /// Global variables
 cv::Mat src, erosion_dst, dilation_dst;
 
@@ -78,6 +103,9 @@ int gridCount[10][19];
 int hSize = 11;
 int vSize = 10;
 
+int idGen = 0;
+vector<Token> tokenVec;
+vector<cv::Point> uTokens;
 
 void genMarkers() {
   cv::Mat markerImage1, markerImage2, markerImage3, markerImage4;
@@ -267,8 +295,10 @@ void drawGrid(cv::Mat imageCopy, vector<cv::Point2f> gridCorners, int horiz, int
   horiz = horiz + 1;
 
   grid = new gridSquare*[vert];
+  //gridCount = new int*[vert];
   for (int i = 0; i < vert; i++) {
     grid[i] = new gridSquare[horiz];
+    //gridCount[i] = new int[horiz];
   }    
 
   cv::Point **hLines;
@@ -396,11 +426,164 @@ bool isWithin(cv::Point p1, cv::Point p2, int rad) {
 
 }
 
-void idTokens(cv::Mat imageCopy) {
+void idTokens() {
+
+  int closestDist = 1e9;
+  int pos = 0;
+
+  //srand(time(NULL));
+
+  for (int i = 0; i < tokenVec.size(); i++) {
+    tokenVec.at(pos).found = false;
+  }
+
+  if (tokenVec.size() > 0) {
+    vector<vector<float>> uTokenDists;
+
+    for (int i = 0; i < tokenVec.size(); i++) {
+      vector<float> newVec;
+      uTokenDists.push_back(newVec);
+      for (int k = 0; k < uTokens.size(); k++) {
+        uTokenDists.at(i).push_back(distance(tokenVec.at(i).location, uTokens.at(k)));
+      }
+    }
+
+    if (uTokens.size() > 4) {
+
+      int k = 0;
+      k++;
+
+    }
+
+    for (int k = 0; k < uTokens.size(); k++) {
+      float dist = 1e9;
+      int pos = -1;
+
+      for (int i = 0; i < tokenVec.size(); i++) {
+        if (uTokenDists.at(i).at(k) < dist) {
+          dist = uTokenDists.at(i).at(k);
+          pos = i;
+        }
+      }
+
+      if (pos >= 0) {
+        tokenVec.at(pos).location = uTokens.at(k);
+        uTokens.at(k).x = -1e9;
+      }
+
+
+    }
+
+
+  }
+
+  for (int k = 0; k < uTokens.size(); k++) {
+    if (uTokens.at(k).x > -1e4) {
+      Token newToken;
+      newToken.location = uTokens.at(k);
+      newToken.lifespan = 1;
+      newToken.id = idGen++;
+      newToken.name = idGen;
+      newToken.found = true;
+
+      newToken.colour = cv::Scalar(rand() % 255, rand() % 255, rand() % 255);
+
+
+      tokenVec.push_back(newToken);
+    }
+  }
+
+
+  uTokens.clear();
+
+  //if (tokenVec.size() > 0) {
+
+  //  for (int k = 0; k < uTokens.size(); k++) {
+  //    for (int i = 0; i < tokenVec.size(); i++) {
+  //      Token selected = tokenVec.at(i);
+
+  //      int selectedDist = distance(selected.location, uTokens.at(k));
+
+  //      if ((selectedDist < closestDist) && (tokenVec.at(i).found = false)) {
+  //        pos = i;
+  //      }
+
+  //    }
+
+  //    tokenVec.at(pos).location = uTokens.at(k);
+  //    tokenVec.at(pos).found = true;
+  //    tokenVec.at(pos).lifespan++;
+  //  }
+
+  //}
+
+
+  //// wroooooooong
+  //if (tokenVec.size() > 0) {
+
+  //  for (int k = 0; k < uTokens.size(); k++) {
+  //    for (int i = 0; i < tokenVec.size(); i++) {
+  //      Token selected = tokenVec.at(i);
+
+  //      int selectedDist = distance(selected.location, uTokens.at(k));
+
+  //      if ((selectedDist < closestDist) && (tokenVec.at(i).found = false)) {
+  //        pos = i;
+  //      }
+
+  //    }
+
+  //    tokenVec.at(pos).location = uTokens.at(k);
+  //    tokenVec.at(pos).found = true;
+  //    tokenVec.at(pos).lifespan++;
+  //  }
+
+  //}
+
+
+
+
+  //if (tokenVec.size() > 0) {
+
+  //  for (int k = 0; k < uTokens.size(); k++) {
+
+  //  }
+
+  //}
+
+
+
+  //for (int i = 0; i < tokenVec.size(); i++) {
+  //  if (tokenVec.at(i).found == false) {
+  //    tokenVec.at(i).lifespan--;
+  //  }
+  //}
+
+  //for (int k = 0; k < uTokens.size(); k++) {
+
+  //  if (uTokens.at(k).x > -1e4) {
+  //    Token newToken;
+
+  //    newToken.id = idGen++;
+  //    newToken.lifespan = 1;
+  //    newToken.location = uTokens.at(k);
+  //    newToken.found = true;
+
+  //    tokenVec.push_back(newToken);
+  //  }
+
+  //}
 
   
 
+  //for (int i = 0; i < tokenVec.size(); i++) {
+  //  if (tokenVec.at(i).lifespan < 0) {
+  //    //tokenVec.erase(tokenVec.begin() + i);
+  //  }
+  //}
+
 }
+
 
 void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
   cv::Mat imageGray, image2;
@@ -414,11 +597,12 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
 
   cv::Canny(imageGray, imageGray, 100, 200, 3);
 
-  cv::imshow("test2", imageGray);
+  cv::imshow("Edges", imageGray);
 
   cv::findContours(imageGray, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE,cv::Point(0, 0));
   
   cv::Mat drawing = cv::Mat::zeros(imageGray.size(), CV_8UC3);
+  cv::Mat con = cv::Mat::zeros(imageGray.size(), CV_8UC3);
 
   for (int i = 0; i < contours.size(); i++) {
 
@@ -449,7 +633,7 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
   {
     cv::Scalar color = cv::Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
     
-    //drawContours(drawing, cont2, i, color, 2, 8, hierarchy, 0, cv::Point());
+    drawContours(con, cont2, i, color, 2, 8, hierarchy, 0, cv::Point());
 
 
     // IDEA! Let's take advantage of the fact that all the contours for each token will be situated around a central point.
@@ -458,9 +642,9 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
         
     for (int j = 0; j < vSize - 1; j++) {
       for (int k = 0; k < hSize - 1; k++) {
-        bool test = grid[j][k].contains(cent);
+        //bool contains = grid[j][k].contains(cent);
 
-        if (test == true) {
+        if (grid[j][k].contains(cent) == true) {
           gridCount[j][k]++;
         }
 
@@ -471,7 +655,7 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
         cv::circle(drawing, grid[j][k].corner[2], 5, cv::Scalar(255, 0, 0), -1);
         cv::circle(drawing, grid[j][k].corner[3], 5, cv::Scalar(255, 0, 0), -1);*/
 
-        //cv::imshow("test3", drawing);
+        //cv::imshow("Contours", con);
 
         //cv::waitKey(0);
 
@@ -483,7 +667,7 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
 
         if (gridCount[j][k] > 1) { // Requiring more than one countour in a square cuts down on noise/drift a bit
 
-          //vector<cv::Point> testVec = grid[j][k].getPointsArray();
+          vector<cv::Point> testVec = grid[j][k].getPointsArray();
 
           cv::Point polyPoints[1][4];
           polyPoints[0][0] = grid[j][k].corner[0];
@@ -498,20 +682,45 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
 
           gridCount[j][k] = 0;
 
+          if (!(find(uTokens.begin(), uTokens.end(), cv::Point(j, k)) != uTokens.end())) {
+            uTokens.push_back(cv::Point(j, k));
+          }   
+
         }
 
       }
     }
 
-
     cv::circle(drawing, cent, 5, cv::Scalar(255, 0, 255), -1);
 
   }
 
-  cv::imshow("test3", drawing);
+  idTokens();
+
+  for (int i = 0; i < tokenVec.size(); i++) {
+
+    int j = tokenVec.at(i).location.x;
+    int k = tokenVec.at(i).location.y;
+
+    cv::Point polyPoints[1][4];
+    polyPoints[0][0] = grid[j][k].corner[0];
+    polyPoints[0][1] = grid[j][k].corner[1];
+    polyPoints[0][2] = grid[j][k].corner[2];
+    polyPoints[0][3] = grid[j][k].corner[3];
+
+    const cv::Point* ppt[1] = { polyPoints[0] };
+    int npt[] = { 4 };
+
+    cv::fillPoly(imageOut, ppt, npt, 1, tokenVec.at(i).colour);
+  }
+
+
+
+  cv::imshow("Contour Centers", drawing);
 
 
 }
+
 
 //int main(int, char** argv)
 //{
@@ -568,9 +777,6 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
 //
 //  return 0;
 //}
-
-
-// intersection is wrong
 
 int main(int, char** argv)
 {
