@@ -434,7 +434,7 @@ void idTokens() {
   //srand(time(NULL));
 
   for (int i = 0; i < tokenVec.size(); i++) {
-    tokenVec.at(pos).found = false;
+    tokenVec.at(i).found = false;
   }
 
   if (tokenVec.size() > 0) {
@@ -466,8 +466,9 @@ void idTokens() {
         }
       }
 
-      if (pos >= 0) {
+      if (tokenVec.at(pos).found == false) {
         tokenVec.at(pos).location = uTokens.at(k);
+        tokenVec.at(pos).found = true;
         uTokens.at(k).x = -1e9;
       }
 
@@ -493,6 +494,24 @@ void idTokens() {
     }
   }
 
+
+  vector<Token> newTokenVec;
+
+  for (int i = 0; i < tokenVec.size(); i++) {
+    if (tokenVec.at(i).found == true) {
+      tokenVec.at(i).lifespan++;
+    }
+    else {
+      tokenVec.at(i).lifespan--;
+    }
+
+    if (tokenVec.at(i).lifespan > 0) {
+      newTokenVec.push_back(tokenVec.at(i));
+    }
+
+  }
+
+  tokenVec = newTokenVec;
 
   uTokens.clear();
 

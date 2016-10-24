@@ -19,7 +19,7 @@ d:\programming projects\c++\pathfindar\pathfindar\source.cpp(292): warning C4101
 d:\programming projects\c++\pathfindar\pathfindar\source.cpp(391): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 d:\programming projects\c++\pathfindar\pathfindar\source.cpp(393): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 d:\programming projects\c++\pathfindar\pathfindar\source.cpp(431): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(471): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(616): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(472): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(635): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
   PathfindAR.vcxproj -> D:\Programming Projects\C++\PathfindAR\x64\Debug\PathfindAR.exe
   PathfindAR.vcxproj -> D:\Programming Projects\C++\PathfindAR\x64\Debug\PathfindAR.pdb (Full PDB)
