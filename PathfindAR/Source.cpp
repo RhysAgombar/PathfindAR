@@ -500,6 +500,11 @@ void idTokens() {
   for (int i = 0; i < tokenVec.size(); i++) {
     if (tokenVec.at(i).found == true) {
       tokenVec.at(i).lifespan++;
+
+      if (tokenVec.at(i).lifespan > 50) {
+        tokenVec.at(i).lifespan = 50;
+      }
+
     }
     else {
       tokenVec.at(i).lifespan--;
