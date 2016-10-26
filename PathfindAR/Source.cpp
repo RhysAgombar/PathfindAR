@@ -98,14 +98,19 @@ gridSquare** grid;
 arMarker arUco[4];
 bool start;
 
-int gridCount[10][19];
+// Something is going very wrong with the grid count
+int gridCount[20][20];
 
 int hSize = 11;
-int vSize = 10;
+int vSize = 9;
 
 int idGen = 0;
 vector<Token> tokenVec;
 vector<cv::Point> uTokens;
+
+int frameCount = 1;
+long squareSum = 0;
+int timer = 5;
 
 void genMarkers() {
   cv::Mat markerImage1, markerImage2, markerImage3, markerImage4;
@@ -291,95 +296,99 @@ void drawGrid(cv::Mat imageCopy, vector<cv::Point2f> gridCorners, int horiz, int
   cv::Mat dirVec[4]; // top left -> top right, bottom left -> bottom right, top left -> bottom left, top right -> bottom right
   float hDist, vDist, dist;
 
-  vert = vert + 1;
-  horiz = horiz + 1;
 
-  grid = new gridSquare*[vert];
-  //gridCount = new int*[vert];
-  for (int i = 0; i < vert; i++) {
-    grid[i] = new gridSquare[horiz];
-    //gridCount[i] = new int[horiz];
-  }    
+  if (gridCorners.size() >= 3) {
 
-  cv::Point **hLines;
-  hLines = new cv::Point*[vert];
-  for (int i = 0; i < vert; i++) {
-    hLines[i] = new cv::Point[2];
-  }    
+    vert = vert + 1;
+    horiz = horiz + 1;
 
-  cv::Point **vLines;
-  vLines = new cv::Point*[horiz];
-  for (int i = 0; i < horiz; i++) {
-    vLines[i] = new cv::Point[2];
-  }    
+    grid = new gridSquare*[vert];
+    //gridCount = new int*[vert];
+    for (int i = 0; i < vert; i++) {
+      grid[i] = new gridSquare[horiz];
+      //gridCount[i] = new int[horiz];
+    }
 
-  horiz = horiz - 1; 
-  vert = vert - 1;
+    cv::Point **hLines;
+    hLines = new cv::Point*[vert];
+    for (int i = 0; i < vert; i++) {
+      hLines[i] = new cv::Point[2];
+    }
 
-  for (int i = 0; i <= vert; i++) {
+    cv::Point **vLines;
+    vLines = new cv::Point*[horiz];
+    for (int i = 0; i < horiz; i++) {
+      vLines[i] = new cv::Point[2];
+    }
 
-    float x = 0;
-    float y = 0;
+    horiz = horiz - 1;
+    vert = vert - 1;
 
-    float distx;
-    float disty;
+    for (int i = 0; i <= vert; i++) {
 
-    distx = gridCorners.at(3).x - gridCorners.at(0).x;
-    disty = gridCorners.at(3).y - gridCorners.at(0).y;
+      float x = 0;
+      float y = 0;
 
+      float distx;
+      float disty;
 
-    hLines[i][0] = cv::Point(gridCorners.at(0).x + (distx * (i / (float)vert)), gridCorners.at(0).y + (disty) * (float)(i / (float)vert));
-
-   //cv::circle(imageCopy, cv::Point(gridCorners.at(0).x + (distx * (i/(float) vert)), gridCorners.at(0).y + (disty) * (float)(i/(float) vert)), 2, cv::Scalar(0, 0, 255));
-
-    distx = gridCorners.at(2).x - gridCorners.at(1).x;
-    disty = gridCorners.at(2).y - gridCorners.at(1).y;
+      distx = gridCorners.at(3).x - gridCorners.at(0).x;
+      disty = gridCorners.at(3).y - gridCorners.at(0).y;
 
 
-    hLines[i][1] = cv::Point(gridCorners.at(1).x + (distx * (i / (float)vert)), gridCorners.at(1).y + (disty) * (float)(i / (float)vert));
-  }
+      hLines[i][0] = cv::Point(gridCorners.at(0).x + (distx * (i / (float)vert)), gridCorners.at(0).y + (disty) * (float)(i / (float)vert));
 
-  for (int i = 0; i <= horiz; i++) {
+      //cv::circle(imageCopy, cv::Point(gridCorners.at(0).x + (distx * (i/(float) vert)), gridCorners.at(0).y + (disty) * (float)(i/(float) vert)), 2, cv::Scalar(0, 0, 255));
 
-    float x = 0;
-    float y = 0;
-
-    float distx;
-    float disty;
-
-    distx = gridCorners.at(1).x - gridCorners.at(0).x;
-    disty = gridCorners.at(1).y - gridCorners.at(0).y;
-
-    vLines[i][0] = cv::Point(gridCorners.at(0).x + (distx * (i / (float)horiz)), gridCorners.at(0).y + (disty) * (float)(i / (float)horiz));
-
-    distx = gridCorners.at(2).x - gridCorners.at(3).x;
-    disty = gridCorners.at(2).y - gridCorners.at(3).y;
-
-    vLines[i][1] = cv::Point(gridCorners.at(3).x + (distx * (i / (float)horiz)), gridCorners.at(3).y + (disty) * (float)(i / (float)horiz));
-  }
-
-  for (int i = 0; i <= vert; i++) {
-    cv::line(imageCopy, hLines[i][0], hLines[i][1], cv::Scalar(255, 255, 255));
-  }
-
-  for (int i = 0; i <= horiz; i++) {
-    cv::line(imageCopy, vLines[i][0], vLines[i][1], cv::Scalar(255, 255, 255));
-  }
+      distx = gridCorners.at(2).x - gridCorners.at(1).x;
+      disty = gridCorners.at(2).y - gridCorners.at(1).y;
 
 
-  for (int i = 0; i < vert; i++) {
-    for (int j = 0; j < horiz; j++) {
+      hLines[i][1] = cv::Point(gridCorners.at(1).x + (distx * (i / (float)vert)), gridCorners.at(1).y + (disty) * (float)(i / (float)vert));
+    }
 
-      grid[j][i].corner[0] = findIntersection(hLines[i][0], hLines[i][1], vLines[j][0], vLines[j][1]);
-      grid[j][i].corner[1] = findIntersection(hLines[i][0], hLines[i][1], vLines[j+1][0], vLines[j+1][1]);
-      grid[j][i].corner[2] = findIntersection(hLines[i+1][0], hLines[i+1][1], vLines[j+1][0], vLines[j+1][1]);
-      grid[j][i].corner[3] = findIntersection(hLines[i+1][0], hLines[i+1][1], vLines[j][0], vLines[j][1]);      
+    for (int i = 0; i <= horiz; i++) {
 
-      //cv::circle(imageCopy, grid[j][i].corner[0], 2, cv::Scalar(0, 0, 255));
-      //cv::circle(imageCopy, grid[j][i].corner[1], 2, cv::Scalar(0, 0, 255));
-      //cv::circle(imageCopy, grid[j][i].corner[2], 2, cv::Scalar(0, 0, 255));
-      //cv::circle(imageCopy, grid[j][i].corner[3], 2, cv::Scalar(0, 0, 255));
+      float x = 0;
+      float y = 0;
 
+      float distx;
+      float disty;
+
+      distx = gridCorners.at(1).x - gridCorners.at(0).x;
+      disty = gridCorners.at(1).y - gridCorners.at(0).y;
+
+      vLines[i][0] = cv::Point(gridCorners.at(0).x + (distx * (i / (float)horiz)), gridCorners.at(0).y + (disty) * (float)(i / (float)horiz));
+
+      distx = gridCorners.at(2).x - gridCorners.at(3).x;
+      disty = gridCorners.at(2).y - gridCorners.at(3).y;
+
+      vLines[i][1] = cv::Point(gridCorners.at(3).x + (distx * (i / (float)horiz)), gridCorners.at(3).y + (disty) * (float)(i / (float)horiz));
+    }
+
+    for (int i = 0; i <= vert; i++) {
+      cv::line(imageCopy, hLines[i][0], hLines[i][1], cv::Scalar(255, 255, 255));
+    }
+
+    for (int i = 0; i <= horiz; i++) {
+      cv::line(imageCopy, vLines[i][0], vLines[i][1], cv::Scalar(255, 255, 255));
+    }
+
+
+    for (int i = 0; i < vert; i++) {
+      for (int j = 0; j < horiz; j++) {
+
+        grid[i][j].corner[0] = findIntersection(hLines[i][0], hLines[i][1], vLines[j][0], vLines[j][1]);
+        grid[i][j].corner[1] = findIntersection(hLines[i][0], hLines[i][1], vLines[j + 1][0], vLines[j + 1][1]);
+        grid[i][j].corner[2] = findIntersection(hLines[i + 1][0], hLines[i + 1][1], vLines[j + 1][0], vLines[j + 1][1]);
+        grid[i][j].corner[3] = findIntersection(hLines[i + 1][0], hLines[i + 1][1], vLines[j][0], vLines[j][1]);
+
+        //cv::circle(imageCopy, grid[j][i].corner[0], 2, cv::Scalar(0, 0, 255));
+        //cv::circle(imageCopy, grid[j][i].corner[1], 2, cv::Scalar(0, 0, 255));
+        //cv::circle(imageCopy, grid[j][i].corner[2], 2, cv::Scalar(0, 0, 255));
+        //cv::circle(imageCopy, grid[j][i].corner[3], 2, cv::Scalar(0, 0, 255));
+
+      }
     }
   }
 
@@ -430,8 +439,6 @@ void idTokens() {
 
   int closestDist = 1e9;
   int pos = 0;
-
-  //srand(time(NULL));
 
   for (int i = 0; i < tokenVec.size(); i++) {
     tokenVec.at(i).found = false;
@@ -520,94 +527,7 @@ void idTokens() {
 
   uTokens.clear();
 
-  //if (tokenVec.size() > 0) {
-
-  //  for (int k = 0; k < uTokens.size(); k++) {
-  //    for (int i = 0; i < tokenVec.size(); i++) {
-  //      Token selected = tokenVec.at(i);
-
-  //      int selectedDist = distance(selected.location, uTokens.at(k));
-
-  //      if ((selectedDist < closestDist) && (tokenVec.at(i).found = false)) {
-  //        pos = i;
-  //      }
-
-  //    }
-
-  //    tokenVec.at(pos).location = uTokens.at(k);
-  //    tokenVec.at(pos).found = true;
-  //    tokenVec.at(pos).lifespan++;
-  //  }
-
-  //}
-
-
-  //// wroooooooong
-  //if (tokenVec.size() > 0) {
-
-  //  for (int k = 0; k < uTokens.size(); k++) {
-  //    for (int i = 0; i < tokenVec.size(); i++) {
-  //      Token selected = tokenVec.at(i);
-
-  //      int selectedDist = distance(selected.location, uTokens.at(k));
-
-  //      if ((selectedDist < closestDist) && (tokenVec.at(i).found = false)) {
-  //        pos = i;
-  //      }
-
-  //    }
-
-  //    tokenVec.at(pos).location = uTokens.at(k);
-  //    tokenVec.at(pos).found = true;
-  //    tokenVec.at(pos).lifespan++;
-  //  }
-
-  //}
-
-
-
-
-  //if (tokenVec.size() > 0) {
-
-  //  for (int k = 0; k < uTokens.size(); k++) {
-
-  //  }
-
-  //}
-
-
-
-  //for (int i = 0; i < tokenVec.size(); i++) {
-  //  if (tokenVec.at(i).found == false) {
-  //    tokenVec.at(i).lifespan--;
-  //  }
-  //}
-
-  //for (int k = 0; k < uTokens.size(); k++) {
-
-  //  if (uTokens.at(k).x > -1e4) {
-  //    Token newToken;
-
-  //    newToken.id = idGen++;
-  //    newToken.lifespan = 1;
-  //    newToken.location = uTokens.at(k);
-  //    newToken.found = true;
-
-  //    tokenVec.push_back(newToken);
-  //  }
-
-  //}
-
-  
-
-  //for (int i = 0; i < tokenVec.size(); i++) {
-  //  if (tokenVec.at(i).lifespan < 0) {
-  //    //tokenVec.erase(tokenVec.begin() + i);
-  //  }
-  //}
-
 }
-
 
 void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
   cv::Mat imageGray, image2;
@@ -617,7 +537,9 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
 
   cv::cvtColor(imageCopy,imageGray,CV_RGB2GRAY);
 
-  cv::GaussianBlur(imageGray, imageGray, cv::Size(3, 3), 1.5, 1.5);
+  cv::GaussianBlur(imageGray, imageGray, cv::Size(5, 5), 1.5, 1.5);
+
+  cv::imshow("Gray", imageGray);
 
   cv::Canny(imageGray, imageGray, 100, 200, 3);
 
@@ -719,7 +641,48 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
 
   }
 
-  idTokens();
+  bool pauseTracking = false;
+  float squareAverage = 0;
+
+
+  // this algorithm is fucky
+  if (squareSum > 10) {
+    float squareAverage = (squareSum /(float) frameCount);
+    if (squareAverage < (uTokens.size() - 1)) {  //(squareAverage/2)) ) {
+
+      // Hand detected
+
+      cv::circle(imageOut, cv::Point(0,0), 20, cv::Scalar(0, 0, 255), -1);
+      pauseTracking = true;
+
+      uTokens.clear();
+
+    } else {
+      frameCount++;
+      squareSum += uTokens.size();
+    }
+  } else {
+    frameCount++;
+    squareSum += uTokens.size();
+  }
+
+  if (pauseTracking == false && timer == 5) {
+    idTokens();
+  }
+  else {
+    timer--;
+    cv::circle(imageOut, cv::Point(0, 0), 20, cv::Scalar(0, 0, 255), -1);
+
+    if (timer < 0) {
+      frameCount++;
+      squareSum += uTokens.size();
+      timer = 5;
+    }
+  }
+
+
+  pauseTracking = false;
+ 
 
   for (int i = 0; i < tokenVec.size(); i++) {
 
@@ -738,75 +701,15 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
     cv::fillPoly(imageOut, ppt, npt, 1, tokenVec.at(i).colour);
   }
 
-
-
   cv::imshow("Contour Centers", drawing);
 
-
 }
-
-
-//int main(int, char** argv)
-//{
-//
-//  cv::Mat inputImage;
-//
-//  cv::Mat image, imageCopy;
-//
-//  string imageName("../Images/Capture2.PNG"); // by default
-//  image = cv::imread(imageName.c_str(), cv::IMREAD_COLOR); // Read the file
-//
-//  cv::GaussianBlur(image, image, cv::Size(3, 3), 1.5, 1.5);
-//
-//  cv::imshow("Original", image);
-//
-//  int dictionaryId = 10; // alias for the DICT_6X6_250 dictionary
-//
-//  cv::Ptr<cv::aruco::Dictionary> dictionary =
-//    cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
-//
-//  cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
-//
-//  vector< int > ids;
-//  vector< vector< cv::Point2f > > corners, rejected;
-//
-//  cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
-//  readDetectorParameters("../detector_params.yml", detectorParams);
-//
-//  image.copyTo(imageCopy);
-//  if (ids.size() > 0) {
-//    cv::aruco::drawDetectedMarkers(imageCopy, corners, ids);
-//  }
-//
-//  vector<cv::Point2f> gridCorners = findCorners(corners, ids);
-//  // All rectangular object corners are organized in arrays, with the numbers going clockwise. eg: at(0) is the top left corner, at(1) is the top right, at(2) is the bottom right, at(3) is bottom left
-//  // This follows the convention that ArUco uses.
-//
-//
-//  int horiz = 11;//21;
-//  int vert = 10;//30;
-//
-//  drawGrid(imageCopy, gridCorners, horiz, vert);
-//
-//  cv::circle(imageCopy, arUco[0].center, 5, cv::Scalar(255, 0, 255), -1);
-//  cv::circle(imageCopy, arUco[1].center, 5, cv::Scalar(255, 0, 255), -1);
-//  cv::circle(imageCopy, arUco[2].center, 5, cv::Scalar(255, 0, 255), -1);
-//  cv::circle(imageCopy, arUco[3].center, 5, cv::Scalar(255, 0, 255), -1);
-//
-//  findTokens(image);
-//
-//  cv::imshow("test", imageCopy);
-//
-//  cv::waitKey(0);
-//
-//  return 0;
-//}
 
 int main(int, char** argv)
 {
 
   cv::VideoCapture inputVideo; 
-  inputVideo.open("../Videos/GridClose.mp4");
+  inputVideo.open("../Videos/TEST_ADD.mp4");
 
   int dictionaryId = 10; // alias for the DICT_6X6_250 dictionary
 
@@ -858,88 +761,10 @@ int main(int, char** argv)
       
     }
 
-
-
-
-    /** Create some points */
-    /*cv::Point rook_points[1][20];
-    rook_points[0][0] = cv::Point(10,10);
-    rook_points[0][1] = cv::Point(0,20);
-    rook_points[0][2] = cv::Point(20,20);
-
-    const cv::Point* ppt[1] = { rook_points[0] };
-    int npt[] = { 3 };
-
-    cv::fillPoly(image, ppt, npt, 1, cv::Scalar(255, 255, 255));*/
-
-
-/*
-    cvFillPoly(image, &pts, &npts, true, cv::Scalar(0, 255, 0));
-*/
-    //polylines(image, &pts, &npts, 1,
-    //  true, 			// draw closed contour (i.e. joint end to start) 
-    //  cv::Scalar(0, 255, 0),// colour RGB ordering (here = green) 
-    //  3, 		        // line thickness
-    //  CV_AA, 0);
-
-
-
-
     cv::imshow("out", image); 
     char key = (char)cv::waitKey(30); 
     if (key == 27) break;
   }
-
-  
-  //cv::VideoCapture cap("../Videos/GridClose.mp4"); // open the default camera
-  //if (!cap.isOpened())  // check if we succeeded
-  //  return -1;
-
-  //cv::Mat edges;
-  //cv::namedWindow("edges", 1);
-
-  //
-  //int dictionaryId = 10; // alias for the DICT_6X6_250 dictionary
-
-  //cv::Ptr<cv::aruco::Dictionary> dictionary =
-  //  cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
-
-  //cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
-
-  //vector< int > ids;
-  //vector< vector< cv::Point2f > > corners, rejected;
-
-  ////cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
-  //readDetectorParameters("../detector_params.yml", detectorParams);
-
-
-  //for (;;)
-  //{
-  //  cv::Mat image;
-  //  cap >> image; // get a new frame from camera
-  //  //cvtColor(image, image, cv::COLOR_BGR2GRAY);
-
-  //  //cv::resize(image, image, cv::Size(640, 480), 0, 0, cv::INTER_CUBIC);
-
-  //  //GaussianBlur(image, image, cv::Size(3, 3), 1.5, 1.5);
-
-  //  //findTokens(image);
-  //  cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
-
-  //    if (ids.size() > 0) {
-  //      cv::aruco::drawDetectedMarkers(image, corners, ids);
-  //    }
-
-  //      //int horiz = 11;//21;
-  //      //int vert = 10;//30;
-  //    
-  //      //vector<cv::Point2f> gridCorners = findCorners(corners, ids);
-  //      //drawGrid(image, gridCorners, horiz, vert);
-
-
-  //  cv::imshow("edges", image);
-  //  if (cv::waitKey(30) >= 0) break;
-  //}
 
   return 0;
 }

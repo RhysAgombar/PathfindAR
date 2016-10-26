@@ -5,24 +5,27 @@ D:\Programming\opencv-3.0\build\install\include\opencv2/core/utility.hpp : warni
 D:\Programming\opencv-3.0\build\install\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
 D:\Programming\opencv-3.0\build\install\include\opencv2/imgproc.hpp(618): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
 Source.cpp(50): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-Source.cpp(156): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
-Source.cpp(230): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-Source.cpp(231): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-Source.cpp(280): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-Source.cpp(331): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+Source.cpp(161): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+Source.cpp(235): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+Source.cpp(236): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+Source.cpp(285): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
 Source.cpp(339): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Source.cpp(353): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Source.cpp(358): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Source.cpp(292): warning C4101: 'vDist': unreferenced local variable
-Source.cpp(292): warning C4101: 'hDist': unreferenced local variable
-Source.cpp(292): warning C4101: 'dist': unreferenced local variable
-Source.cpp(391): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-Source.cpp(393): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-Source.cpp(431): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-Source.cpp(472): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-Source.cpp(640): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+Source.cpp(347): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+Source.cpp(361): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+Source.cpp(366): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+Source.cpp(297): warning C4101: 'vDist': unreferenced local variable
+Source.cpp(297): warning C4101: 'hDist': unreferenced local variable
+Source.cpp(297): warning C4101: 'dist': unreferenced local variable
+Source.cpp(400): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+Source.cpp(402): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+Source.cpp(440): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+Source.cpp(479): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+Source.cpp(562): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+Source.cpp(662): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
+Source.cpp(666): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
+Source.cpp(678): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
   Generating code
-  31 of 882 functions ( 3.5%) were compiled, the rest were copied from previous compilation.
+  29 of 882 functions ( 3.3%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

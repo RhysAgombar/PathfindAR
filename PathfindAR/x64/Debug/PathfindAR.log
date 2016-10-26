@@ -5,21 +5,24 @@ d:\programming\opencv-3.0\build\install\include\opencv2\core\utility.hpp : warni
 d:\programming\opencv-3.0\build\install\include\opencv2\core\utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
 d:\programming\opencv-3.0\build\install\include\opencv2\imgproc.hpp(618): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
 d:\programming projects\c++\pathfindar\pathfindar\source.cpp(50): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(156): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(230): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(231): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(280): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(331): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(161): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(235): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(236): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(285): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
 d:\programming projects\c++\pathfindar\pathfindar\source.cpp(339): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(353): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(358): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(292): warning C4101: 'vDist': unreferenced local variable
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(292): warning C4101: 'hDist': unreferenced local variable
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(292): warning C4101: 'dist': unreferenced local variable
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(391): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(393): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(431): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(472): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(635): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-  PathfindAR.vcxproj -> D:\Programming Projects\C++\PathfindAR\x64\Debug\PathfindAR.exe
-  PathfindAR.vcxproj -> D:\Programming Projects\C++\PathfindAR\x64\Debug\PathfindAR.pdb (Full PDB)
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(347): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(361): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(366): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(297): warning C4101: 'vDist': unreferenced local variable
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(297): warning C4101: 'hDist': unreferenced local variable
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(297): warning C4101: 'dist': unreferenced local variable
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(400): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(402): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(440): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(479): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(562): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(660): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(664): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(676): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(683): warning C4244: '=': conversion from 'float' to 'long', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(683): error C4700: uninitialized local variable 'squareAverage' used
