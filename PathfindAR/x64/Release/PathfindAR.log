@@ -19,11 +19,8 @@ Source.cpp(297): warning C4101: 'dist': unreferenced local variable
 Source.cpp(400): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 Source.cpp(402): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 Source.cpp(440): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-Source.cpp(479): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-Source.cpp(562): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-Source.cpp(662): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
-Source.cpp(666): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
-Source.cpp(678): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
+Source.cpp(501): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+Source.cpp(584): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
   Generating code
   29 of 882 functions ( 3.3%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation

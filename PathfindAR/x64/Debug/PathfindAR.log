@@ -19,10 +19,7 @@ d:\programming projects\c++\pathfindar\pathfindar\source.cpp(297): warning C4101
 d:\programming projects\c++\pathfindar\pathfindar\source.cpp(400): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 d:\programming projects\c++\pathfindar\pathfindar\source.cpp(402): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 d:\programming projects\c++\pathfindar\pathfindar\source.cpp(440): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(479): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(562): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(660): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(664): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(676): warning C4267: '+=': conversion from 'size_t' to 'long', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(683): warning C4244: '=': conversion from 'float' to 'long', possible loss of data
-d:\programming projects\c++\pathfindar\pathfindar\source.cpp(683): error C4700: uninitialized local variable 'squareAverage' used
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(501): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+d:\programming projects\c++\pathfindar\pathfindar\source.cpp(584): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  PathfindAR.vcxproj -> D:\Programming Projects\C++\PathfindAR\x64\Debug\PathfindAR.exe
+  PathfindAR.vcxproj -> D:\Programming Projects\C++\PathfindAR\x64\Debug\PathfindAR.pdb (Full PDB)

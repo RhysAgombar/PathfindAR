@@ -99,7 +99,7 @@ arMarker arUco[4];
 bool start;
 
 // Something is going very wrong with the grid count
-int gridCount[20][20];
+int gridCount[12][10];
 
 int hSize = 11;
 int vSize = 9;
@@ -455,7 +455,7 @@ void idTokens() {
       }
     }
 
-    if (uTokens.size() > 4) {
+    if (uTokens.size() > 5) {
 
       int k = 0;
       k++;
@@ -468,17 +468,40 @@ void idTokens() {
 
       for (int i = 0; i < tokenVec.size(); i++) {
         if (uTokenDists.at(i).at(k) < dist) {
-          dist = uTokenDists.at(i).at(k);
-          pos = i;
+          float tempDist = uTokenDists.at(i).at(k);
+          bool flag = true;
+
+          for (int j = 0; j < uTokens.size(); j++) {
+            if (tempDist > uTokenDists.at(i).at(j)) {
+              flag = false;
+            }
+          }
+
+          if (flag == true) {
+            dist = uTokenDists.at(i).at(k);
+
+            if (dist > 2) {
+              if (dist < 3) {
+                int stop = 0;
+                stop++;
+              }
+            }
+
+            pos = i;
+          }   
+
+
         }
       }
 
-      if (tokenVec.at(pos).found == false) {
-        tokenVec.at(pos).location = uTokens.at(k);
-        tokenVec.at(pos).found = true;
-        uTokens.at(k).x = -1e9;
+      if (pos >= 0) {
+        if (tokenVec.at(pos).found == false) {
+          tokenVec.at(pos).location = uTokens.at(k);
+          tokenVec.at(pos).found = true;
+          uTokens.at(k).x = -1e9;
+        }
       }
-
+      
 
     }
 
@@ -496,7 +519,6 @@ void idTokens() {
 
       newToken.colour = cv::Scalar(rand() % 255, rand() % 255, rand() % 255);
 
-
       tokenVec.push_back(newToken);
     }
   }
@@ -508,8 +530,8 @@ void idTokens() {
     if (tokenVec.at(i).found == true) {
       tokenVec.at(i).lifespan++;
 
-      if (tokenVec.at(i).lifespan > 50) {
-        tokenVec.at(i).lifespan = 50;
+      if (tokenVec.at(i).lifespan > 100) {
+        tokenVec.at(i).lifespan = 100;
       }
 
     }
@@ -646,39 +668,41 @@ void findTokens(cv::Mat imageCopy, cv::Mat imageOut) {
 
 
   // this algorithm is fucky
-  if (squareSum > 10) {
-    float squareAverage = (squareSum /(float) frameCount);
-    if (squareAverage < (uTokens.size() - 1)) {  //(squareAverage/2)) ) {
+  //if (squareSum > 10) {
+  //  float squareAverage = (squareSum /(float) frameCount);
+  //  if (squareAverage < (uTokens.size() - 1)) {  //(squareAverage/2)) ) {
 
-      // Hand detected
+  //    // Hand detected
 
-      cv::circle(imageOut, cv::Point(0,0), 20, cv::Scalar(0, 0, 255), -1);
-      pauseTracking = true;
+  //    cv::circle(imageOut, cv::Point(0,0), 20, cv::Scalar(0, 0, 255), -1);
+  //    pauseTracking = true;
 
-      uTokens.clear();
+  //    uTokens.clear();
 
-    } else {
-      frameCount++;
-      squareSum += uTokens.size();
-    }
-  } else {
-    frameCount++;
-    squareSum += uTokens.size();
-  }
+  //  } else {
+  //    frameCount++;
+  //    squareSum += uTokens.size();
+  //  }
+  //} else {
+  //  frameCount++;
+  //  squareSum += uTokens.size();
+  //}
 
-  if (pauseTracking == false && timer == 5) {
+  //if (pauseTracking == false && timer == 5) {
     idTokens();
-  }
-  else {
-    timer--;
-    cv::circle(imageOut, cv::Point(0, 0), 20, cv::Scalar(0, 0, 255), -1);
+  //}
+  //else {
+  //  timer--;
+  //  cv::circle(imageOut, cv::Point(0, 0), 20, cv::Scalar(0, 0, 255), -1);
 
-    if (timer < 0) {
-      frameCount++;
-      squareSum += uTokens.size();
-      timer = 5;
-    }
-  }
+  //  if (timer < 0) {
+  //    frameCount++;
+  //    squareSum += uTokens.size();
+  //    timer = 5;
+  //  }
+  //}
+
+    uTokens.clear();
 
 
   pauseTracking = false;
